@@ -3,7 +3,7 @@
 #### Slides: https://ufal.mff.cuni.cz/~straka/courses/npfl139/2526/slides/?07
 #### Reading: https://ufal.mff.cuni.cz/~straka/courses/npfl139/2526/slides.pdf/npfl139-2526-07.pdf,PDF Slides
 #### Video: https://lectures.ms.mff.cuni.cz/video/rec/npfl139/2526/npfl139-2526-07.mp4, Lecture
-#### Questions: #lecture_8_questions
+#### Questions: #lecture_7_questions
 
 - Gradient methods with continuous actions [Section 13.7 of RLB]
 - Deterministic policy gradient theorem (DPG) [[David Silver et al.: Deterministic Policy Gradient Algorithms](http://proceedings.mlr.press/v32/silver14.pdf)]
