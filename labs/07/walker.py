@@ -2,6 +2,7 @@
 import argparse
 import collections
 import copy
+import json
 
 import gymnasium as gym
 import numpy as np
@@ -163,6 +164,17 @@ class Agent:
     def load_actor(self, path: str) -> None:
         self._actor.load_state_dict(torch.load(path, map_location=self.device))
 
+    @staticmethod
+    def save_args(path: str, args: argparse.Namespace) -> None:
+        with open(path, "w", encoding="utf-8") as file:
+            json.dump(vars(args), file, ensure_ascii=False, indent=2)
+
+    @staticmethod
+    def load_args(path: str) -> argparse.Namespace:
+        with open(path, "r", encoding="utf-8-sig") as file:
+            args = json.load(file)
+        return argparse.Namespace(**args)
+
 
 def main(env: npfl139.EvaluationEnv, args: argparse.Namespace) -> None:
     # Set the random seed and the number of threads.
@@ -176,25 +188,25 @@ def main(env: npfl139.EvaluationEnv, args: argparse.Namespace) -> None:
         state = env.reset(options={"start_evaluation": start_evaluation, "logging": logging})[0]
         rewards, done = 0, False
         while not done:
-            # TODO: Predict an action by using a greedy policy.
+            # TODO: Predict an action using the greedy policy.
             action = ...
             state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
             rewards += reward
         return rewards
 
-    # Evaluation in ReCodEx
+    # ReCodEx evaluation.
     if args.recodex:
         agent.load_actor(args.model_path)
         while True:
-            evaluate_episode(True)
+            evaluate_episode(start_evaluation=True)
 
-    # Create the asynchroneous vector environment for training.
+    # Create the asynchronous vector environment for training.
     vector_env = gym.make_vec(args.env, args.envs, gym.VectorizeMode.ASYNC,
                               vector_kwargs={"autoreset_mode": gym.vector.AutoresetMode.SAME_STEP})
 
     # Replay memory of a specified maximum size.
-    replay_buffer = npfl139.MonolithicReplayBuffer(args.replay_buffer_size, args.seed)
+    replay_buffer = npfl139.ReplayBuffer(args.replay_buffer_size, args.seed)
     Transition = collections.namedtuple("Transition", ["state", "action", "reward", "done", "next_state"])
 
     state = vector_env.reset(seed=args.seed)[0]
@@ -218,6 +230,10 @@ def main(env: npfl139.EvaluationEnv, args: argparse.Namespace) -> None:
 
         # Periodic evaluation
         returns = [evaluate_episode() for _ in range(args.evaluate_for)]
+
+    # You can save the agent using:
+    #   agent.save_actor(args.model_path)
+    #   agent.save_args(args.model_path + ".json", args)
 
     # Final evaluation
     while True:
